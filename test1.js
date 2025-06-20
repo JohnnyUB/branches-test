@@ -6,6 +6,7 @@ class Test1 {
     
     method1() {
         console.log("Test1 method1");
+        console.log("This is a change from task1")
         return "Test1 method1";
     }
 }
