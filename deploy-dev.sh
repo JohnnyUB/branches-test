@@ -4,35 +4,74 @@ set -e
 
 # Get current branch as TASK_BRANCH
 TASK_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-DEV_BRANCH="${TASK_BRANCH}-dev"
-MAIN_DEV_BRANCH="main-DEV"
 
-echo "Current branch: $TASK_BRANCH"
-echo "Creating and merging $DEV_BRANCH into $MAIN_DEV_BRANCH..."
+# Remote name
+REMOTE=branches-test
 
-# Check if task branch exists locally or remotely
-if ! git show-ref --verify --quiet refs/heads/$TASK_BRANCH && ! git ls-remote --exit-code --heads origin $TASK_BRANCH > /dev/null; then
-  echo "Branch $TASK_BRANCH does not exist locally or remotely."
-  exit 2
-fi
+deploy_env() {
+  ENV_NAME=$1
+  DEST_BRANCH=$2
+  SUFFIX=$3
 
-# Fetch all
-git fetch
+  WORK_BRANCH="${TASK_BRANCH}-${SUFFIX}"
 
-# Create dev branch from task branch
-git checkout -b $DEV_BRANCH
+  echo "\n==== Deploy su $ENV_NAME ===="
+  echo "Branch di lavoro: $WORK_BRANCH"
+  echo "Branch di destinazione: $DEST_BRANCH"
 
-# Push dev branch to remote
-git push -u branches-test $DEV_BRANCH
+  # Crea branch di lavoro da TASK_BRANCH
+  git checkout $TASK_BRANCH
+  git checkout -b $WORK_BRANCH
 
-# Checkout main-DEV and update
-git checkout $MAIN_DEV_BRANCH
-git pull branches-test $MASTER_DEV_BRANCH
+  # Push branch di lavoro
+  git push -u $REMOTE $WORK_BRANCH
 
-# Merge dev branch into main-DEV
-git merge --no-ff $DEV_BRANCH
+  # Allinea branch di lavoro con branch di destinazione
+  git pull $REMOTE $DEST_BRANCH
+  echo "✅ $DEST_BRANCH mergiato in $WORK_BRANCH. Risolvi eventuali conflitti, poi premi invio per continuare."
+  read -p "Premi invio per continuare..."
 
-# Push main-DEV
-git push branches-test $MASTER_DEV_BRANCH 
+  # Push branch di lavoro aggiornato
+  git push $REMOTE $WORK_BRANCH
 
-echo "✅ Branch $DEV_BRANCH merged into $MAIN_DEV_BRANCH and pushed."
+  # Passa su branch di destinazione e aggiorna
+  git checkout $DEST_BRANCH
+  git pull $REMOTE $DEST_BRANCH
+
+  # Merge branch di lavoro in branch di destinazione
+  git merge --no-ff $WORK_BRANCH
+  git push $REMOTE $DEST_BRANCH
+
+  # Cancella branch di lavoro localmente e remotamente
+  git branch -d $WORK_BRANCH
+  git push $REMOTE --delete $WORK_BRANCH
+
+  echo "✅ Deploy su $ENV_NAME completato."
+}
+
+# Menu interattivo
+PS3="Seleziona l'ambiente di deploy (1-4): "
+options=("DEV" "STAGE" "PROD" "TUTTI")
+select opt in "${options[@]}"; do
+  case $opt in
+    "DEV")
+      deploy_env "DEV" "main-DEV" "dev"
+      break
+      ;;
+    "STAGE")
+      deploy_env "STAGE" "main-STAGE" "stage"
+      break
+      ;;
+    "PROD")
+      deploy_env "PROD" "main" "prod"
+      break
+      ;;
+    "TUTTI")
+      deploy_env "DEV" "main-DEV" "dev"
+      deploy_env "STAGE" "main-STAGE" "stage"
+      deploy_env "PROD" "main" "prod"
+      break
+      ;;
+    *) echo "Opzione non valida";;
+  esac
+done
