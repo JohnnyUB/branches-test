@@ -1,11 +1,11 @@
 #!/bin/bash
 
 TASK_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-STAGE=$2  # "PRE" o "STAGE" o "PRODUCTION"
+STAGE=$1  # "PRE" o "STAGE" o "PRODUCTION"
 
 if [[ -z "$TASK_BRANCH" || -z "$STAGE" ]]; then
-  echo "Errore: Devi specificare un task branch e uno stage (PRE, STAGE o PROD)."
-  echo "Uso: ./deploy.sh <task-branch> <PRE|STAGE|PROD>"
+  echo "Errore: Devi specificare un ambiente (PRE, STAGE o PROD)."
+  echo "Uso: ./merge.sh <PRE|STAGE|PROD>"
   exit 1
 fi
 
