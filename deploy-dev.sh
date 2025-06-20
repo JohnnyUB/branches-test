@@ -1,15 +1,13 @@
 #!/bin/bash
 
-set -e  
+set -e
 
-if [ -z "$1" ]; then        
-  echo "Usage: $0 <task-branch-name>"
-  exit 1
-fi
-
-TASK_BRANCH="$1"
+# Get current branch as TASK_BRANCH
+TASK_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 DEV_BRANCH="${TASK_BRANCH}-dev"
-MASTER_DEV_BRANCH="master-DEV"
+
+echo "Current branch: $TASK_BRANCH"
+echo "Creating and merging $DEV_BRANCH into $MAIN_DEV_BRANCH..."
 
 # Check if task branch exists locally or remotely
 if ! git show-ref --verify --quiet refs/heads/$TASK_BRANCH && ! git ls-remote --exit-code --heads origin $TASK_BRANCH > /dev/null; then
@@ -20,23 +18,20 @@ fi
 # Fetch all
 git fetch
 
-# Checkout task branch
-git checkout $TASK_BRANCH
-
 # Create dev branch from task branch
 git checkout -b $DEV_BRANCH
 
 # Push dev branch to remote
 git push -u origin $DEV_BRANCH
 
-# Checkout master-DEV and update
-git checkout $MASTER_DEV_BRANCH
-git pull origin $MASTER_DEV_BRANCH
+# Checkout main-DEV and update
+git checkout $MAIN_DEV_BRANCH
+git pull origin $MAIN_DEV_BRANCH
 
-# Merge dev branch into master-DEV
+# Merge dev branch into main-DEV
 git merge --no-ff $DEV_BRANCH
 
-# Push master-DEV
-git push origin $MASTER_DEV_BRANCH
+# Push main-DEV
+git push origin $MAIN_DEV_BRANCH
 
-echo "✅ Branch $DEV_BRANCH merged into $MASTER_DEV_BRANCH and pushed."
+echo "✅ Branch $DEV_BRANCH merged into $MAIN_DEV_BRANCH and pushed."
