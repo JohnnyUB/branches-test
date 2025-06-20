@@ -37,14 +37,20 @@ fi
 git checkout -b "$TEMP_BRANCH" "$TASK_BRANCH"
 
 # Merge dell'ultima versione del branch target
-git merge "$TARGET_BRANCH" --no-ff -m "Merge $TARGET_BRANCH into $TEMP_BRANCH"
+git merge "$TARGET_BRANCH" --no-ff -m "Merge $TARGET_BRANCH into $TEMP_BRANCH" || {
+  echo "\n⚠️  Conflitti durante il merge di $TARGET_BRANCH in $TEMP_BRANCH. Risolvili, fai il commit e poi premi invio per continuare...";
+  read -p "Premi invio per continuare...";
+}
 
 # Push del branch temporaneo
 git push $REMOTE "$TEMP_BRANCH"
 
 # Merge nel branch di destinazione
 git checkout "$TARGET_BRANCH"
-git merge "$TEMP_BRANCH" --no-ff -m "Merge $TEMP_BRANCH into $TARGET_BRANCH"
+git merge "$TEMP_BRANCH" --no-ff -m "Merge $TEMP_BRANCH into $TARGET_BRANCH" || {
+  echo "\n⚠️  Conflitti durante il merge di $TEMP_BRANCH in $TARGET_BRANCH. Risolvili, fai il commit e poi premi invio per continuare...";
+  read -p "Premi invio per continuare...";
+}
 
 # Push del branch aggiornato
 git push $REMOTE "$TARGET_BRANCH"
