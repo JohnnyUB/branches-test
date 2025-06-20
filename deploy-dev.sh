@@ -23,16 +23,16 @@ git fetch
 git checkout -b $DEV_BRANCH
 
 # Push dev branch to remote
-git push -u origin $DEV_BRANCH
+git push -u branches-test $DEV_BRANCH
 
 # Checkout main-DEV and update
 git checkout $MAIN_DEV_BRANCH
-git pull origin $MAIN_DEV_BRANCH
+git pull branches-test $MASTER_DEV_BRANCH
 
 # Merge dev branch into main-DEV
 git merge --no-ff $DEV_BRANCH
 
 # Push main-DEV
-git push origin $MAIN_DEV_BRANCH
+git push branches-test $MASTER_DEV_BRANCH 
 
 echo "✅ Branch $DEV_BRANCH merged into $MAIN_DEV_BRANCH and pushed."
