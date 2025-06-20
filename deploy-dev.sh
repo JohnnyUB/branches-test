@@ -5,6 +5,7 @@ set -e
 # Get current branch as TASK_BRANCH
 TASK_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 DEV_BRANCH="${TASK_BRANCH}-dev"
+MAIN_DEV_BRANCH="main-DEV"
 
 echo "Current branch: $TASK_BRANCH"
 echo "Creating and merging $DEV_BRANCH into $MAIN_DEV_BRANCH..."
@@ -22,16 +23,28 @@ git fetch
 git checkout -b $DEV_BRANCH
 
 # Push dev branch to remote
-git push -u origin $DEV_BRANCH
+git push -u branches-test $DEV_BRANCH
 
-# Checkout main-DEV and update
+# Merge main-DEV into dev branch per allineamento
+git pull branches-test $MAIN_DEV_BRANCH
+
+echo "✅ $MAIN_DEV_BRANCH merged into $DEV_BRANCH. Risolvi eventuali conflitti, poi premi invio per continuare."
+read -p "Premi invio per continuare..."
+
+git push branches-test $DEV_BRANCH
+
+# Checkout main-DEV e aggiorna
 git checkout $MAIN_DEV_BRANCH
-git pull origin $MAIN_DEV_BRANCH
+git pull branches-test $MAIN_DEV_BRANCH
 
 # Merge dev branch into main-DEV
 git merge --no-ff $DEV_BRANCH
 
-# Push main-DEV
-git push origin $MAIN_DEV_BRANCH
+git push branches-test $MAIN_DEV_BRANCH
 
-echo "✅ Branch $DEV_BRANCH merged into $MAIN_DEV_BRANCH and pushed."
+# (Opzionale) Cancella il branch dev localmente e remotamente
+git branch -d $DEV_BRANCH
+git push branches-test --delete $DEV_BRANCH
+
+
+echo "✅ Branch $DEV_BRANCH aggiornato con $MAIN_DEV_BRANCH, mergiato in $MAIN_DEV_BRANCH e pushato."
