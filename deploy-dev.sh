@@ -5,6 +5,7 @@ set -e
 # Get current branch as TASK_BRANCH
 TASK_BRANCH=$(git rev-parse --abbrev-ref HEAD)
 DEV_BRANCH="${TASK_BRANCH}-dev"
+MAIN_DEV_BRANCH="main-DEV"
 
 echo "Current branch: $TASK_BRANCH"
 echo "Creating and merging $DEV_BRANCH into $MAIN_DEV_BRANCH..."
